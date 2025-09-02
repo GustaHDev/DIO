@@ -44,6 +44,7 @@ public class MigrationStrategy {
         } finally {
             System.setOut(originalOut);
             System.setErr(originalError);
+            System.out.println("Migration finished! Check the liquibase.log file for details.");
         }
     }
 }
