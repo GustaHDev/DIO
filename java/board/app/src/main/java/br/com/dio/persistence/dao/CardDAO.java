@@ -18,7 +18,7 @@ public class CardDAO {
     private Connection connection;
 
     public CardEntity insert(final CardEntity entity) throws SQLException {
-        var sql = "INSERT INTO CARDS (tile, description, board_column_id) VALUES (?, ?, ?);";
+        var sql = "INSERT INTO CARDS (title, description, board_column_id) VALUES (?, ?, ?);";
 
         try(var statement = connection.prepareStatement(sql)){
             var i = 1;
@@ -31,6 +31,19 @@ public class CardDAO {
             }
         }
         return entity;
+    }
+
+    public void moveToColumn(final Long columnId, final Long cardId) throws SQLException {
+        var sql = "UPDATE CARDS SET board_column_id = ? WHERE id = ?";
+
+        try(var statement = connection.prepareStatement(sql)) {
+            var i = 1;
+            statement.setLong(i++, columnId);
+            statement.setLong(i++, cardId);
+            statement.executeUpdate();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     public Optional<CardDetailsDTO> findById(final Long id) throws SQLException {
@@ -51,7 +64,7 @@ public class CardDAO {
                     AND b.unblocked_at IS NULL
                 INNER JOIN BOARDS_COLUMNS bc
                     ON bc.id = c.board_column_id
-                WHERE id = ?;
+                WHERE c.id = ?;
                 """;
         try (var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
@@ -65,7 +78,7 @@ public class CardDAO {
                         resultSet.getString("c.description"),
                         Objects.nonNull(resultSet.getString("b.block_reason")),
                         OffsetDateTimeConverter.toOffsetDateTime(resultSet.getTimestamp("b.blocked_at")),
-                        resultSet.getString("b.blocked_reason"),
+                        resultSet.getString("b.block_reason"),
                         resultSet.getInt("blocks_amount"),
                         resultSet.getLong("c.board_column_id"),
                         resultSet.getString("bc.name"));

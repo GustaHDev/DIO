@@ -5,13 +5,20 @@ import static br.com.dio.persistence.config.ConnectionConfig.getConnection;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-import br.com.dio.persistence.entity.BoardColumnKindEnum.INITIAL;
+import static br.com.dio.persistence.entity.BoardColumnKindEnum.CANCEL;
+import static br.com.dio.persistence.entity.BoardColumnKindEnum.FINAL;
+import static br.com.dio.persistence.entity.BoardColumnKindEnum.INITIAL;
+import static br.com.dio.persistence.entity.BoardColumnKindEnum.PENDING;
+
+import br.com.dio.persistence.entity.BoardColumnKindEnum;
+import br.com.dio.dto.BoardColumnInfoDTO;
 import br.com.dio.persistence.entity.BoardColumnEntity;
 import br.com.dio.persistence.entity.BoardEntity;
 import br.com.dio.persistence.entity.CardEntity;
 import br.com.dio.service.BoardColumnQueryService;
 import br.com.dio.service.BoardQueryService;
 import br.com.dio.service.CardQueryService;
+import br.com.dio.service.CardService;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -37,12 +44,12 @@ public class BoardMenu {
                 System.out.println("9 - Voltar ao menu de boards");
 
                 System.out.println("10 - Sair");
-                option = scanner.nextInt();
+                option = Integer.parseInt(scanner.nextLine());
 
                 switch (option) {
                     case 1 -> createCard();
                     case 2 -> moveCardToNextColumn();
-                    case 3 -> unblockCard();
+                    case 3 -> blockCard();
                     case 4 -> unblockCard();
                     case 5 -> cancelCard();
                     case 6 -> showBoard();
@@ -62,33 +69,69 @@ public class BoardMenu {
     private void createCard() throws SQLException {
         var card = new CardEntity();
         System.out.println("Informe o título do card");
-        card.setTitle(scanner.next());
+        card.setTitle(scanner.nextLine());
         System.out.println("Informe a descrição do card");
-        card.setDescription(scanner.next());
-
-        var initialColumn = entity.getBoardColumns().stream().filter(bc -> bc.getKind().equals(INITIAL))
+        card.setDescription(scanner.nextLine());
+        card.setBoardColumn(entity.getInitialColumn());
+        try (var connection = getConnection()) {
+            new CardService(connection).insert(card);
+        }
     }
 
-    private void moveCardToNextColumn() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'moveCardToNextColumn'");
+    private void moveCardToNextColumn() throws SQLException {
+        System.out.println("Informe o ID do card que deseja mover para a próxima coluna");
+        var cardId = Long.parseLong(scanner.nextLine());
+        var boardColumnsInfo = entity.getBoardColumns().stream()
+                .map(bc -> new BoardColumnInfoDTO(bc.getId(), bc.getOrder(), bc.getKind()))
+                .toList();
+        try (var connection = getConnection()) {
+            new CardService(connection).moveToNextColumn(cardId, boardColumnsInfo);
+        } catch (RuntimeException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 
-    private void unblockCard() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'unblockCard'");
+    private void blockCard() throws SQLException {
+        System.out.println("Informe o id do card a ser bloqueado: ");
+        var cardId = Long.parseLong(scanner.nextLine());
+        System.out.println("Informe o motivo do bloqueio: ");
+        var reason = scanner.nextLine();
+        var boardColumnsInfo = entity.getBoardColumns().stream()
+                .map(bc -> new BoardColumnInfoDTO(bc.getId(), bc.getOrder(), bc.getKind()))
+                .toList();
+        try (var connection = getConnection()) {
+            new CardService(connection).block(cardId, reason, boardColumnsInfo);
+        } catch (RuntimeException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 
-    private void cancelCard() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'cancelCard'");
+    private void unblockCard() throws SQLException {
+        System.out.println("Informe o id do card a ser desbloqueado: ");
+        var cardId = Long.parseLong(scanner.nextLine());
+        System.out.println("Informe o motivo do desbloqueio: ");
+        var reason = scanner.nextLine();
+    }
+
+    private void cancelCard() throws SQLException {
+        System.out.println("Informe o ID do card que deseja mover para a coluna de cancelados");
+        var cardId = Long.parseLong(scanner.nextLine());
+        var cancelColumn = entity.getCancelColumn();
+        var boardColumnsInfo = entity.getBoardColumns().stream()
+                .map(bc -> new BoardColumnInfoDTO(bc.getId(), bc.getOrder(), bc.getKind()))
+                .toList();
+        try (var connection = getConnection()) {
+            new CardService(connection).cancel(cardId, cancelColumn.getId(), boardColumnsInfo);
+        } catch (RuntimeException ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 
     private void showBoard() throws SQLException {
         try (var connection = getConnection()) {
             var optional = new BoardQueryService(connection).showBoardDetails(entity.getId());
             optional.ifPresent(b -> {
-                System.out.printf("Board [%s, $s] \n", b.id(), b.name());
+                System.out.printf("Board [%s, %s] \n", b.id(), b.name());
                 b.columns().forEach(c -> {
                     System.out.printf("Coluna [%s] tipo: [%s] tem %s cards \n", c.name(), c.kind(), c.cardsAmount());
                 });
@@ -103,34 +146,36 @@ public class BoardMenu {
             System.out.printf("Escolha uma coluna do board %s \n", entity.getName());
             entity.getBoardColumns()
                     .forEach(c -> System.out.printf("%s - %s [%s] \n", c.getId(), c.getName(), c.getKind()));
-            selectedColumn = scanner.nextLong();
+            selectedColumn = Long.parseLong(scanner.nextLine());
         }
         try (var connection = getConnection()) {
             var column = new BoardColumnQueryService(connection).findById(selectedColumn);
             column.ifPresent(co -> {
                 System.out.printf("Coluna %s tipo %s \n", co.getName(), co.getKind());
-                co.getCards().forEach(ca -> System.out.printf("Card %s - %s \n Descrição: %s",
+                co.getCards().forEach(ca -> System.out.printf("Card %s - %s \n Descrição: %s \n",
                         ca.getId(), ca.getTitle(), ca.getDescription()));
             });
         }
 
     }
 
-    private void showCard() throws SQLException{
-        System.out.println("Informe o id do card a ser que deseja ver");
+    private void showCard() throws SQLException {
+        System.out.println("Informe o id do card que deseja ver");
         var selectedCardId = scanner.nextLong();
-        try(var connection = getConnection()){
-             new CardQueryService(connection).findById(selectedCardId)
-                .ifPresentOrElse(c -> {
-                    System.out.printf("Card %s - %s. \n", c.id(), c.title());
-                    System.out.printf(" Descrição: %s \n", c.description());
-                    System.out.println(c.blocked() ? 
-                    "Está bloqueado. Motivo: " + c.blockReason() : 
-                    "Não está bloqueado");
-                    System.out.printf("Já foi bloqueado %s vezes \n", c.blocksAmount());
-                    System.out.printf("Se encontra na coluna %s - %s \n", c.columnId(), c.columnName());
-                }, 
-                () -> System.out.printf("Não foi possível encontrar um card com o id %s \n", selectedCardId));
+        try (var connection = getConnection()) {
+            new CardQueryService(connection).findById(selectedCardId)
+                    .ifPresentOrElse(
+                            c -> {
+                                System.out.printf("Card %s - %s. \n", c.id(), c.title());
+                                System.out.printf(" Descrição: %s \n", c.description());
+                                System.out.println(
+                                        c.blocked() ? "Está bloqueado. Motivo: " + c.blockReason()
+                                                : "Não está bloqueado");
+                                System.out.printf("Já foi bloqueado %s vezes \n", c.blocksAmount());
+                                System.out.printf("Se encontra na coluna %s - %s \n", c.columnId(), c.columnName());
+                            },
+                            () -> System.out.printf("Não foi possível encontrar um card com o id %s",
+                                    selectedCardId));
         }
     }
 

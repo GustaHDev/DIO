@@ -1,15 +1,15 @@
-set. 02, 2025 5:25:34 PM liquibase.changelog
+set. 02, 2025 11:38:09 PM liquibase.changelog
 INFORMAÇÕES: Reading resource: db/changelog/migrations/db.changelog-202501091732.sql
-set. 02, 2025 5:25:34 PM liquibase.changelog
+set. 02, 2025 11:38:09 PM liquibase.changelog
 INFORMAÇÕES: Reading resource: db/changelog/migrations/db.changelog-202502091352.sql
-set. 02, 2025 5:25:34 PM liquibase.changelog
+set. 02, 2025 11:38:09 PM liquibase.changelog
 INFORMAÇÕES: Reading resource: db/changelog/migrations/db.changelog-202502091359.sql
-set. 02, 2025 5:25:34 PM liquibase.changelog
+set. 02, 2025 11:38:09 PM liquibase.changelog
 INFORMAÇÕES: Reading resource: db/changelog/migrations/db.changelog-202502091403.sql
-set. 02, 2025 5:25:34 PM liquibase.changelog
+set. 02, 2025 11:38:09 PM liquibase.changelog
 INFORMAÇÕES: Reading from board.DATABASECHANGELOG
 Database is up to date, no changesets to execute
-set. 02, 2025 5:25:34 PM liquibase.changelog
+set. 02, 2025 11:38:09 PM liquibase.changelog
 INFORMAÇÕES: Reading from board.DATABASECHANGELOG
 
 UPDATE SUMMARY
@@ -19,21 +19,21 @@ Filtered out:                 0
 -------------------------------
 Total change sets:            4
 
-set. 02, 2025 5:25:34 PM liquibase.util
+set. 02, 2025 11:38:09 PM liquibase.util
 INFORMAÇÕES: UPDATE SUMMARY
-set. 02, 2025 5:25:34 PM liquibase.util
+set. 02, 2025 11:38:09 PM liquibase.util
 INFORMAÇÕES: Run:                          0
-set. 02, 2025 5:25:34 PM liquibase.util
+set. 02, 2025 11:38:09 PM liquibase.util
 INFORMAÇÕES: Previously run:               4
-set. 02, 2025 5:25:34 PM liquibase.util
+set. 02, 2025 11:38:09 PM liquibase.util
 INFORMAÇÕES: Filtered out:                 0
-set. 02, 2025 5:25:34 PM liquibase.util
+set. 02, 2025 11:38:09 PM liquibase.util
 INFORMAÇÕES: -------------------------------
-set. 02, 2025 5:25:34 PM liquibase.util
+set. 02, 2025 11:38:09 PM liquibase.util
 INFORMAÇÕES: Total change sets:            4
-set. 02, 2025 5:25:34 PM liquibase.util
+set. 02, 2025 11:38:09 PM liquibase.util
 INFORMAÇÕES: Update summary generated
-set. 02, 2025 5:25:34 PM liquibase.lockservice
+set. 02, 2025 11:38:09 PM liquibase.lockservice
 INFORMAÇÕES: Successfully released change log lock
-set. 02, 2025 5:25:34 PM liquibase.command
+set. 02, 2025 11:38:09 PM liquibase.command
 INFORMAÇÕES: Command execution complete
