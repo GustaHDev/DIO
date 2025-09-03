@@ -8,6 +8,7 @@ import static br.com.dio.persistence.config.ConnectionConfig.getConnection;
 import java.sql.SQLException;
 
 import br.com.dio.persistence.migration.MigrationStrategy;
+import br.com.dio.ui.MainMenu;
 
 public class Main {
 
@@ -15,5 +16,7 @@ public class Main {
         try(var connection = getConnection()) {
             new MigrationStrategy(connection).executeMigration();
         }
+
+        new MainMenu().execute();
     }
 }
